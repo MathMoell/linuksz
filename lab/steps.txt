@@ -1,0 +1,55 @@
+LAB:  käsud (copy paste osa)
+
+sudo apt update
+sudo apt install -y rsyslog
+systemctl status rsyslog
+
+sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<'NET'
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      addresses: [192.168.100.10/24]
+      routes:
+        - to: default
+          via: 192.168.100.1
+      nameservers:
+        addresses: [8.8.8.8]
+NET
+sudo netplan try
+
+sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<'NET'
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      addresses: [192.168.100.20/24]
+      routes:
+        - to: default
+          via: 192.168.100.1
+      nameservers:
+        addresses: [8.8.8.8]
+NET
+sudo netplan try
+
+sudo tee -a /etc/rsyslog.conf > /dev/null <<'RS'
+# Luba UDP logide kuulamine
+module(load="imudp")
+input(type="imudp" port="514")
+RS
+sudo mkdir -p /var/log/remote
+sudo chmod 755 /var/log/remote
+sudo chown syslog:adm /var/log/remote
+sudo tee /etc/rsyslog.d/remote.conf > /dev/null <<'RC'
+*.* /var/log/remote/syslog.log
+RC
+sudo systemctl restart rsyslog
+
+sudo tee /etc/rsyslog.d/forward.conf > /dev/null <<'FC'
+*.* @192.168.100.10:514
+FC
+sudo systemctl restart rsyslog
+
+logger "TERE! See on testlogi kliendilt!"
+
+tail -f /var/log/remote/syslog.log
