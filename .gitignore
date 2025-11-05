@@ -1,0 +1,4 @@
+# Ignore common files
+*.zip
+lab_output/
+.DS_Store
