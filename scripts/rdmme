@@ -1,0 +1,4 @@
+kasutamine:
+- test-logs.sh: tee executable `chmod +x test-logs.sh`
+`./test-logs.sh`
+- apply-netplan-demo.sh: demo
